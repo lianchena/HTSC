@@ -139,6 +139,56 @@ def optimization(mean,sample_cov,target=0.15, L=0, H=1): # Set the target mean r
 optimization(mean,covariance(portfolio2))    
 
 
+'''2023.9.11 MON'''
+# max return
+# optimized weights with maximum return given conditions on weights and standard deviation
+def optimization_ret(returns,cov_matrix,w1=0.4,w2=0.5,target=0.1): # Set the target mean return
+    n = len(returns) # Total number of assets
+    initial_weights = np.ones(n) / n # Initial guess for weights
+    bounds = [(0, 1) for _ in range(n)] # Set bounds for weights (between 0 and 1)    
+    # Define constraints for each asset
+    def asset1_constraint(weights):
+        return w1 - weights[0]  # Constraint for asset 1: 0 <= Weight <= w1
+    def asset2_constraint(weights):
+        return w2 - weights[1]  # Constraint for asset 2: 0 <= Weight <= w2
+    
+    # Define the objective function to maximize (portfolio return)
+    def objective_function(weights, returns):
+        return -np.sum(returns * weights)  # maximize the negative return
+    # Define the constraint function for portfolio standard deviation <= 10%
+    def risk_constraint(weights, cov_matrix):
+        portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+        return target - portfolio_volatility  # Constraint: Standard Deviation <= 10%
+    # Define constraints as a list of custom functions for each asset
+    constraints = [{'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1},  # Full investment constraint
+        {'type': 'ineq', 'fun': risk_constraint, 'args': (cov_matrix,)},  # Risk constraint
+        {'type': 'ineq', 'fun': asset1_constraint},  # Constraint for asset 1
+        {'type': 'ineq', 'fun': asset2_constraint}]  # Constraint for asset 2
+    result = minimize(objective_function, initial_weights, args=(returns,), method='SLSQP', constraints=constraints, bounds=bounds)
+    SD=np.sqrt(np.dot(result.x.T, np.dot(cov_matrix, result.x)))
+    return "Optimal Portfolio Weights:"+str(result.x)+". Optimal Portfolio Return:"+str(-result.fun)+". Optimal Portfolio Standard Deviation:"+str(SD) 
+optimization_ret(returns(portfolio),covariance(portfolio))    
+
+'''graph'''
+# https://www.analyticsvidhya.com/blog/2023/06/optimizing-portfolios-with-the-mean-variance-method-in-python/
+# Plot efficient frontier with Monte Carlo sim
+ef = EfficientFrontier(mu, S)
+fig, ax = plt.subplots(figsize= (10,10))
+plotting.plot_efficient_frontier(ef, ax=ax, show_assets=False)
+# Find and plot the tangency portfolio
+ef2 = EfficientFrontier(mu, S)
+ef2.max_sharpe()
+ret_tangent, std_tangent, _ = ef2.portfolio_performance()
+# Plot random portfolios
+ax.scatter(stds, rets, marker=".", c=sharpes, cmap="viridis_r")
+ax.scatter(std_tangent, ret_tangent, c='red', marker='X',s=150, label= 'Max Sharpe')
+# Format
+ax.set_title("Efficient Frontier with random portfolios")
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+
 
 
 
