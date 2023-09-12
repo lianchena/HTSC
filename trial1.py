@@ -294,9 +294,12 @@ def port_return_to_value(returns):
     return port_value
 q.apply(lambda x: x+1)
 
+for i in range(len(l['Name'])): 
+    w = l['Name'][0] + l['Name'][1]
 
 
-
+for i in range(index_stock['code']): 
+    pitch = pitch + index_stock['指数名称'][i] + str(index_stock['code'][i])
 
 
 
