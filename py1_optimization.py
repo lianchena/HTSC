@@ -47,17 +47,17 @@ graph(portfolio2,"2008-01-01")
 
 
 '''calculation'''
-# 收益、标准差
+# returns
 def returns(portfolio,frequency=252):
     total_return=portfolio2.iloc[-1, :] / portfolio2.iloc[0, :]
     period=(portfolio2.index[-1] - portfolio2.index[0]).days/365
     mean=total_return**(1 / period) - 1
     std=(portfolio.pct_change()[1:].std())*np.sqrt(frequency)
     res = pd.DataFrame({"mean":mean,"std": std})
-    return np.array(res["mean"])
+    return np.array(mean)
 returns(portfolio2)
 
-# Calculating the covariance matrix
+# calculating the covariance matrix
 def covariance(portfolio,frequency=252):
     res = portfolio.pct_change().dropna(how="all").cov()*frequency
     # plotting.plot_covariance(res, plot_correlation=True);
